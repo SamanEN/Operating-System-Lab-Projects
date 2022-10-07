@@ -54,13 +54,14 @@ int main(int argc, char* argv[]) {
         exit();
     }
 
-    int first = atoi(argv[1]);
-    int last = atoi(argv[2]);
+    int first = atoi_neg(argv[1]);
+    int last = atoi_neg(argv[2]);
 
     if (first > last) {
         swap(&first, &last);
     }
 
+    unlink("prime_numbers.txt");
     int fd = open("prime_numbers.txt", O_CREATE | O_WRONLY);
     if (fd < 0) {
         printf(1, "prime_numbers: cannot create prime_numbers.txt\n");

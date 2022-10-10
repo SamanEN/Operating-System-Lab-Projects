@@ -186,6 +186,49 @@ struct {
   uint e;  // Edit index
 } input;
 
+#define HIST_SIZE 15
+struct {
+  uint queue_idx;
+  uint last_used_idx;
+  int pred_used_on_current_cmd;
+  char cmd_buf[HIST_SIZE][INPUT_BUF];
+  char original_cmd[INPUT_BUF];
+  uint original_cmd_size;
+} hist;
+
+void consclear(){
+    while(input.e != input.w &&
+        input.buf[(input.e-1) % INPUT_BUF] != '\n'){
+    input.e--;
+    consputc(BACKSPACE);
+  }
+}
+
+void consputs(char* s){
+  for(int i = 0; i < INPUT_BUF && (s[i]); ++i){
+    input.buf[input.e++ % INPUT_BUF] = s[i];
+    consputc(s[i]);
+  }
+}
+
+int is_good_pred(char* cmd, char* pred, uint cmd_size){
+  for(int i = 0; (i < cmd_size) && cmd[i]; ++i){
+    if(cmd[i] != pred[i])
+      return 0;
+  }
+  return 1;
+}
+
+int get_pred(char* cmd, uint cmd_size){
+  for(int i = 0; i < HIST_SIZE; ++i){
+    int idx = (i + hist.last_used_idx + 1) % HIST_SIZE;
+    if(is_good_pred(cmd, hist.cmd_buf[idx], cmd_size)){
+      return idx;
+    }
+  }
+  return -1;
+}
+
 #define C(x)  ((x)-'@')  // Control-x
 
 void
@@ -211,6 +254,25 @@ consoleintr(int (*getc)(void))
       if(input.e != input.w){
         input.e--;
         consputc(BACKSPACE);
+        hist.pred_used_on_current_cmd = 0;
+      }
+      break;
+    case '\t':
+      ;
+      int predicted_cmd = -1;
+      if(!hist.pred_used_on_current_cmd){
+        predicted_cmd = get_pred(input.buf + input.w, input.e - input.w);
+        memcpy(hist.original_cmd, input.buf + input.w, input.e - input.w);
+        hist.original_cmd_size = input.e - input.w;
+      }
+      else{
+        predicted_cmd = get_pred(hist.original_cmd, hist.original_cmd_size);
+      }
+      if(predicted_cmd >= 0){
+        hist.pred_used_on_current_cmd = 1;
+        hist.last_used_idx = predicted_cmd;
+        consclear();
+        consputs(hist.cmd_buf[predicted_cmd]);
       }
       break;
     default:
@@ -219,6 +281,14 @@ consoleintr(int (*getc)(void))
         input.buf[input.e++ % INPUT_BUF] = c;
         consputc(c);
         if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
+          memset(hist.cmd_buf[hist.queue_idx], 0, INPUT_BUF);
+          memcpy(
+            hist.cmd_buf[hist.queue_idx],
+            input.buf + input.w,
+            input.e - input.w - 1);
+          hist.pred_used_on_current_cmd = 0;
+          memset(hist.original_cmd, 0, INPUT_BUF);
+          hist.queue_idx = (hist.queue_idx + 1) % HIST_SIZE;
           input.w = input.e;
           wakeup(&input.r);
         }

@@ -229,6 +229,19 @@ int get_pred(char* cmd, uint cmd_size){
   return -1;
 }
 
+void
+revstr(char* src, uint len)
+{
+    int i = 0, j = len - 1;
+    while (i < j) {
+        char tmp = src[i];
+        src[i] = src[j];
+        src[j] = tmp;
+        i++;
+        j--;
+    }
+}
+
 #define C(x)  ((x)-'@')  // Control-x
 
 void
@@ -255,6 +268,16 @@ consoleintr(int (*getc)(void))
         input.e--;
         consputc(BACKSPACE);
         hist.pred_used_on_current_cmd = 0;
+      }
+      break;
+    case C('R'): // Reverse
+      {
+        char cmd[INPUT_BUF];
+        memcpy(cmd, input.buf + input.w, input.e - input.w);
+        cmd[input.e - input.w] = 0;
+        revstr(cmd, input.e - input.w);
+        consclear();
+        consputs(cmd);
       }
       break;
     case '\t':
@@ -366,4 +389,3 @@ consoleinit(void)
 
   ioapicenable(IRQ_KBD, 0);
 }
-

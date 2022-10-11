@@ -226,7 +226,7 @@ is_good_pred(const char* cmd, const char* pred, uint cmd_size){
 static int
 get_pred(const char* cmd, uint cmd_size){
   for(int i = 0; i < HIST_SIZE; ++i){
-    int idx = (i + hist.last_used_idx + 1) % HIST_SIZE;
+    int idx = (i + hist.last_used_idx) % HIST_SIZE;
     if(is_good_pred(cmd, hist.cmd_buf[idx], cmd_size)){
       return idx;
     }
@@ -247,7 +247,7 @@ pred_cmd(){
   }
   if(predicted_cmd >= 0){
     hist.is_pred_used = 1;
-    hist.last_used_idx = predicted_cmd;
+    hist.last_used_idx = predicted_cmd + 1;
     consclear();
     consputs(hist.cmd_buf[predicted_cmd]);
   }
@@ -262,6 +262,7 @@ push_current_hist(){
     input.e - input.w - 1);
   hist.queue_idx = (hist.queue_idx + 1) % HIST_SIZE;
   hist.is_pred_used = 0;
+  hist.last_used_idx = 0;
   memset(hist.original_cmd, 0, INPUT_BUF);
 }
 

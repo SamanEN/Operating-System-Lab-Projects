@@ -186,26 +186,6 @@ struct {
   uint e;  // Edit index
 } input;
 
-#define HIST_SIZE 15
-struct {
-  uint queue_idx;
-  char cmd_buf[HIST_SIZE][INPUT_BUF];
-  uint last_used_idx;
-
-  int is_pred_used;
-  char original_cmd[INPUT_BUF];
-  uint original_cmd_size;
-} hist;
-
-void
-consclear(){
-    while(input.e != input.w &&
-        input.buf[(input.e-1) % INPUT_BUF] != '\n'){
-    input.e--;
-    consputc(BACKSPACE);
-  }
-}
-
 void
 consputs(const char* s){
   for(int i = 0; i < INPUT_BUF && (s[i]); ++i){
@@ -214,20 +194,32 @@ consputs(const char* s){
   }
 }
 
-static int
-is_good_pred(const char* cmd, const char* pred, uint cmd_size){
-  for(int i = 0; (i < cmd_size) && cmd[i]; ++i){
-    if(cmd[i] != pred[i])
-      return 0;
+void
+consclear(){
+  while(input.e != input.w &&
+        input.buf[(input.e-1) % INPUT_BUF] != '\n'){
+    input.e--;
+    consputc(BACKSPACE);
   }
-  return 1;
 }
 
+#define HIST_SIZE 15
+struct {
+  uint queue_idx;
+  char cmd_buf[HIST_SIZE][INPUT_BUF];
+  uint last_used_idx;
+
+  int is_suggestion_used;
+  char original_cmd[INPUT_BUF];
+  uint original_cmd_size;
+} hist;
+
 static int
-get_pred(const char* cmd, uint cmd_size){
+get_suggestion(const char* cmd, uint cmd_size)
+{
   for(int i = 0; i < HIST_SIZE; ++i){
     int idx = (i + hist.last_used_idx) % HIST_SIZE;
-    if(is_good_pred(cmd, hist.cmd_buf[idx], cmd_size)){
+    if(strncmp(cmd, hist.cmd_buf[idx], cmd_size) == 0){
       return idx;
     }
   }
@@ -235,33 +227,30 @@ get_pred(const char* cmd, uint cmd_size){
 }
 
 static void
-pred_cmd(){
-  int predicted_cmd = -1;
-  if(!hist.is_pred_used){
-    predicted_cmd = get_pred(input.buf + input.w, input.e - input.w);
-    memcpy(hist.original_cmd, input.buf + input.w, input.e - input.w);
+suggest_cmd()
+{
+  if(!hist.is_suggestion_used){
     hist.original_cmd_size = input.e - input.w;
+    memmove(hist.original_cmd, input.buf + input.w, hist.original_cmd_size);
   }
-  else{
-    predicted_cmd = get_pred(hist.original_cmd, hist.original_cmd_size);
-  }
-  if(predicted_cmd >= 0){
-    hist.is_pred_used = 1;
-    hist.last_used_idx = predicted_cmd + 1;
+  int suggested_cmd = get_suggestion(hist.original_cmd, hist.original_cmd_size);
+  if(suggested_cmd >= 0){
+    hist.is_suggestion_used = 1;
+    hist.last_used_idx = suggested_cmd + 1;
     consclear();
-    consputs(hist.cmd_buf[predicted_cmd]);
+    consputs(hist.cmd_buf[suggested_cmd]);
   }
 }
 
 static void
-push_current_hist(){
+push_current_hist()
+{
   memset(hist.cmd_buf[hist.queue_idx], 0, INPUT_BUF);
-  memcpy(
-    hist.cmd_buf[hist.queue_idx],
-    input.buf + input.w,
-    input.e - input.w - 1);
+  memmove(hist.cmd_buf[hist.queue_idx],
+          input.buf + input.w,
+          input.e - input.w - 1);
   hist.queue_idx = (hist.queue_idx + 1) % HIST_SIZE;
-  hist.is_pred_used = 0;
+  hist.is_suggestion_used = 0;
   hist.last_used_idx = 0;
   memset(hist.original_cmd, 0, INPUT_BUF);
 }
@@ -269,22 +258,22 @@ push_current_hist(){
 void
 revstr(char* src, uint len)
 {
-    int i = 0, j = len - 1;
-    while (i < j) {
-        char tmp = src[i];
-        src[i] = src[j];
-        src[j] = tmp;
-        i++;
-        j--;
-    }
+  int i = 0, j = len - 1;
+  while (i < j) {
+    char tmp = src[i];
+    src[i] = src[j];
+    src[j] = tmp;
+    i++;
+    j--;
+  }
 }
 
 static void
 revline()
 {
   char cmd[INPUT_BUF];
-  memcpy(cmd, input.buf + input.w, input.e - input.w);
-  cmd[input.e - input.w] = 0;
+  memmove(cmd, input.buf + input.w, input.e - input.w);
+  cmd[input.e - input.w] = '\0';
   revstr(cmd, input.e - input.w);
   consclear();
   consputs(cmd);
@@ -302,7 +291,7 @@ remnums()
     }
     cmd[j++] = input.buf[idx];
   }
-  cmd[j] = 0;
+  cmd[j] = '\0';
   consclear();
   consputs(cmd);
 }
@@ -322,27 +311,23 @@ consoleintr(int (*getc)(void))
       doprocdump = 1;
       break;
     case C('U'):  // Kill line.
-      while(input.e != input.w &&
-            input.buf[(input.e-1) % INPUT_BUF] != '\n'){
-        input.e--;
-        consputc(BACKSPACE);
-      }
+      consclear();
       break;
     case C('H'): case '\x7f':  // Backspace
       if(input.e != input.w){
         input.e--;
         consputc(BACKSPACE);
-        hist.is_pred_used = 0;
+        hist.is_suggestion_used = 0;
       }
       break;
-    case C('R'): // Reverse
+    case C('R'): // Reverse line.
       revline();
       break;
-    case C('N'): // Remove numbers
+    case C('N'): // Remove numbers from line.
       remnums();
       break;
-    case '\t':
-      pred_cmd();
+    case '\t': // Suggest command from history.
+      suggest_cmd();
       break;
     default:
       if(c != 0 && input.e-input.r < INPUT_BUF){

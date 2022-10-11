@@ -242,7 +242,7 @@ revstr(char* src, uint len)
     }
 }
 
-void
+static void
 revline()
 {
   char cmd[INPUT_BUF];
@@ -253,7 +253,7 @@ revline()
   consputs(cmd);
 }
 
-void
+static void
 remnums()
 {
   char cmd[INPUT_BUF];

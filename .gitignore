@@ -54,9 +54,9 @@ Mkfile.old
 dkms.conf
 
 
-## Project
-
+# Project
 *.mp4
+*.tmp
 
 # Word backup files
 ~$*.docx

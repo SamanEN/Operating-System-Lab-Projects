@@ -242,6 +242,34 @@ revstr(char* src, uint len)
     }
 }
 
+void
+revline()
+{
+  char cmd[INPUT_BUF];
+  memcpy(cmd, input.buf + input.w, input.e - input.w);
+  cmd[input.e - input.w] = 0;
+  revstr(cmd, input.e - input.w);
+  consclear();
+  consputs(cmd);
+}
+
+void
+remnums()
+{
+  char cmd[INPUT_BUF];
+  int j = 0;
+  for(int i = 0; i < input.e - input.w; ++i){
+    int idx = (input.w + i) % INPUT_BUF;
+    if(input.buf[idx] >= '0' && input.buf[idx] <= '9'){
+      continue;
+    }
+    cmd[j++] = input.buf[idx];
+  }
+  cmd[j] = 0;
+  consclear();
+  consputs(cmd);
+}
+
 #define C(x)  ((x)-'@')  // Control-x
 
 void
@@ -271,30 +299,10 @@ consoleintr(int (*getc)(void))
       }
       break;
     case C('R'): // Reverse
-      {
-        char cmd[INPUT_BUF];
-        memcpy(cmd, input.buf + input.w, input.e - input.w);
-        cmd[input.e - input.w] = 0;
-        revstr(cmd, input.e - input.w);
-        consclear();
-        consputs(cmd);
-      }
+      revline();
       break;
     case C('N'): // Remove numbers
-      {
-        char cmd[INPUT_BUF];
-        int j = 0;
-        for(int i = 0; i < input.e - input.w; ++i){
-          int idx = (input.w + i) % INPUT_BUF;
-          if(input.buf[idx] >= '0' && input.buf[idx] <= '9'){
-            continue;
-          }
-          cmd[j++] = input.buf[idx];
-        }
-        cmd[j] = 0;
-        consclear();
-        consputs(cmd);
-      }
+      remnums();
       break;
     case '\t':
       ;

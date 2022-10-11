@@ -280,6 +280,22 @@ consoleintr(int (*getc)(void))
         consputs(cmd);
       }
       break;
+    case C('N'): // Remove numbers
+      {
+        char cmd[INPUT_BUF];
+        int j = 0;
+        for(int i = 0; i < input.e - input.w; ++i){
+          int idx = (input.w + i) % INPUT_BUF;
+          if(input.buf[idx] >= '0' && input.buf[idx] <= '9'){
+            continue;
+          }
+          cmd[j++] = input.buf[idx];
+        }
+        cmd[j] = 0;
+        consclear();
+        consputs(cmd);
+      }
+      break;
     case '\t':
       ;
       int predicted_cmd = -1;

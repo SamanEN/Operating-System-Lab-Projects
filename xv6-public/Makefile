@@ -184,6 +184,7 @@ UPROGS=\
 	_zombie\
 	_prime_numbers\
 	_find_largest_prime_factor\
+	_get_parent_pid_test\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)

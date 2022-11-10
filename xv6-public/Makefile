@@ -183,6 +183,7 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_prime_numbers\
+	_pid\
 	_find_largest_prime_factor\
 	_get_parent_pid_test\
 

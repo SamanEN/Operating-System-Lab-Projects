@@ -25,7 +25,7 @@
 static void itrunc(struct inode*);
 // there should be one superblock per disk device, but we run with
 // only one device
-struct superblock sb; 
+struct superblock sb;
 
 // Read the super block.
 void
@@ -172,7 +172,7 @@ void
 iinit(int dev)
 {
   int i = 0;
-  
+
   initlock(&icache.lock, "icache");
   for(i = 0; i < NINODE; i++) {
     initsleeplock(&icache.inode[i].lock, "inode");
@@ -508,6 +508,37 @@ writei(struct inode *ip, char *src, uint off, uint n)
     iupdate(ip);
   }
   return n;
+}
+
+int
+changesize(struct inode *ip, uint size)
+{
+  uint n, off, tot, m;
+  struct buf *bp;
+
+  if (ip->type != T_FILE)
+    return -1;
+  if (size > ip->size) {
+    n = size - ip->size;
+    off = ip->size;
+  } else {
+    n = ip->size - size;
+    off = size;
+    if (off != 0) {
+      char newline = '\n';
+      writei(ip, &newline, off - 1, 1);
+    }
+  }
+  for(tot=0; tot<n; tot+=m, off+=m){
+      bp = bread(ip->dev, bmap(ip, off/BSIZE));
+      m = min(n - tot, BSIZE - off%BSIZE);
+      memset(bp->data + off%BSIZE, 0, m);
+      log_write(bp);
+      brelse(bp);
+  }
+  ip->size = size;
+  iupdate(ip);
+  return size;
 }
 
 //PAGEBREAK!

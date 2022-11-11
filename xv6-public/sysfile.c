@@ -333,6 +333,45 @@ sys_open(void)
 }
 
 int
+sys_change_file_size(void)
+{
+  char *path;
+  int n, r;
+  struct file *f;
+  struct inode *ip;
+
+  if(argstr(0, &path) < 0 || argint(1, &n) < 0)
+    return -1;
+
+  // open file
+  begin_op();
+
+  ip = create(path, T_FILE, 0, 0);
+  if(ip == 0){
+    end_op();
+    return -1;
+  }
+
+  if((f = filealloc()) == 0){
+    iunlockput(ip);
+    end_op();
+    return -1;
+  }
+  iunlock(ip);
+  end_op();
+
+  f->type = FD_INODE;
+  f->ip = ip;
+  f->off = 0;
+  f->readable = 1;
+  f->writable = 1;
+
+  r = filechangesize(f, n);
+  fileclose(f);
+  return r;
+}
+
+int
 sys_mkdir(void)
 {
   char *path;
@@ -374,7 +413,7 @@ sys_chdir(void)
   char *path;
   struct inode *ip;
   struct proc *curproc = myproc();
-  
+
   begin_op();
   if(argstr(0, &path) < 0 || (ip = namei(path)) == 0){
     end_op();

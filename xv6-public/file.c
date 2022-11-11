@@ -155,3 +155,21 @@ filewrite(struct file *f, char *addr, int n)
   panic("filewrite");
 }
 
+int
+filechangesize(struct file *f, int n)
+{
+  int r;
+
+  if(f->writable == 0)
+    return -1;
+  if(f->type == FD_INODE){
+    begin_op();
+    ilock(f->ip);
+    if ((r = changesize(f->ip, n)) > 0)
+      f->off = r;
+    iunlock(f->ip);
+    end_op();
+    return r;
+  }
+  panic("filechangesize");
+}

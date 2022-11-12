@@ -524,10 +524,6 @@ changesize(struct inode *ip, uint size)
   } else {
     n = ip->size - size;
     off = size;
-    if (off != 0) {
-      char newline = '\n';
-      writei(ip, &newline, off - 1, 1);
-    }
   }
   for(tot=0; tot<n; tot+=m, off+=m){
       bp = bread(ip->dev, bmap(ip, off/BSIZE));

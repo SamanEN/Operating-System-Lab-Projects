@@ -25,6 +25,7 @@ int sleep(int);
 int uptime(void);
 int find_largest_prime_factor(void);
 int change_file_size(char*, int);
+void get_callers(int);
 int get_parent_pid(void);
 
 // ulib.c

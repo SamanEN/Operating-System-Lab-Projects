@@ -532,3 +532,31 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+int
+get_callers(int sys_call_number) {
+  int result[NPROC] = {0};
+  int result_counter = -1;
+
+  struct proc *p;
+
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->tf->eax == (uint)sys_call_number) {
+      ++result_counter;
+      result[result_counter] = p->pid;
+    }
+  }
+  release(&ptable.lock);  
+  if(result_counter < 0) {
+    cprintf("No process with system call number %d.\n", sys_call_number);
+    return 0;
+  }
+
+  cprintf("%d", result[0]);
+  for(int i = 1; i < result_counter; ++i) {
+    cprintf(", %d", result[i]);
+  }
+  cprintf("\n");
+  return 0;
+}

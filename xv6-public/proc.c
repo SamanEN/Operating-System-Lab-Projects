@@ -20,6 +20,8 @@ extern void trapret(void);
 
 static void wakeup1(void *chan);
 
+struct proc_syscall_hist p_hist = {0};
+
 void
 pinit(void)
 {
@@ -533,30 +535,28 @@ procdump(void)
   }
 }
 
+void
+push_p_hist(int pid, int syscall_number) {
+  int cur_size = p_hist.syscall_hist[syscall_number].size % PROC_HIST_SIZE;
+  p_hist.syscall_hist[syscall_number].pids[cur_size] = pid;
+  ++(p_hist.syscall_hist[syscall_number].size);
+}
+
 int
-get_callers(int sys_call_number) {
-  int result[NPROC] = {0};
-  int result_counter = -1;
+get_callers(int syscall_number) {
+  int cur_size = p_hist.syscall_hist[syscall_number].size;
+  cur_size = (cur_size > PROC_HIST_SIZE) ? PROC_HIST_SIZE : cur_size;
 
-  struct proc *p;
-
-  acquire(&ptable.lock);
-  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-    if(p->tf->eax == (uint)sys_call_number) {
-      ++result_counter;
-      result[result_counter] = p->pid;
-    }
-  }
-  release(&ptable.lock);  
-  if(result_counter < 0) {
-    cprintf("No process with system call number %d.\n", sys_call_number);
+  if(cur_size == 0) {
+    cprintf("No process has called system call number %d.\n", syscall_number);
     return 0;
   }
 
-  cprintf("%d", result[0]);
-  for(int i = 1; i < result_counter; ++i) {
-    cprintf(", %d", result[i]);
+  cprintf("%d", p_hist.syscall_hist[syscall_number].pids[0]);
+  for(int i = 0; i < cur_size; ++i) {
+    cprintf(", %d", p_hist.syscall_hist[syscall_number].pids[i]);
   }
   cprintf("\n");
+
   return 0;
 }

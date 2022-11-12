@@ -122,6 +122,7 @@ void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
 void            yield(void);
+void            push_p_hist(int, int);
 int             get_callers(int);
 
 // swtch.S

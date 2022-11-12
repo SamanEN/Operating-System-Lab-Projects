@@ -56,3 +56,13 @@ struct proc {
 //   original data and bss
 //   fixed-size stack
 //   expandable heap
+
+#define PROC_HIST_SIZE 100
+#define SYS_CALL_NUM 26
+
+struct proc_syscall_hist {
+  struct {
+    int pids[PROC_HIST_SIZE];
+    int size;
+  } syscall_hist[SYS_CALL_NUM];
+};

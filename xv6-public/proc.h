@@ -57,12 +57,10 @@ struct proc {
 //   fixed-size stack
 //   expandable heap
 
-#define PROC_HIST_SIZE 100
+#define PROC_HIST_SIZE 1000
 #define SYS_CALL_NUM 26
 
-struct proc_syscall_hist {
-  struct {
-    int pids[PROC_HIST_SIZE];
-    int size;
-  } syscall_hist[SYS_CALL_NUM];
+struct syscall_hist {
+  int pids[PROC_HIST_SIZE];
+  int size;
 };

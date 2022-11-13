@@ -20,7 +20,7 @@ extern void trapret(void);
 
 static void wakeup1(void *chan);
 
-struct proc_syscall_hist p_hist = {0};
+struct syscall_hist p_hist[SYS_CALL_NUM] = {0};
 
 void
 pinit(void)
@@ -537,25 +537,26 @@ procdump(void)
 
 void
 push_p_hist(int pid, int syscall_number) {
-  int cur_size = p_hist.syscall_hist[syscall_number].size % PROC_HIST_SIZE;
-  p_hist.syscall_hist[syscall_number].pids[cur_size] = pid;
-  ++(p_hist.syscall_hist[syscall_number].size);
+  int cur_size = p_hist[syscall_number].size % PROC_HIST_SIZE;
+  p_hist[syscall_number].pids[cur_size] = pid;
+  ++(p_hist[syscall_number].size);
 }
 
 int
 get_callers(int syscall_number) {
-  int cur_size = p_hist.syscall_hist[syscall_number].size;
-  cur_size = (cur_size > PROC_HIST_SIZE) ? PROC_HIST_SIZE : cur_size;
+  int limit = p_hist[syscall_number].size;
 
-  if(cur_size == 0) {
+  if(limit == 0) {
     cprintf("No process has called system call number %d.\n", syscall_number);
     return 0;
   }
 
-  cprintf("%d", p_hist.syscall_hist[syscall_number].pids[0]);
-  for(int i = 0; i < cur_size; ++i) {
-    cprintf(", %d", p_hist.syscall_hist[syscall_number].pids[i]);
+  int i = (limit > PROC_HIST_SIZE) ? limit % PROC_HIST_SIZE : 0;
+  limit = (limit - 1) % PROC_HIST_SIZE;
+  for(; i != limit; i = (i + 1) % PROC_HIST_SIZE) {
+    cprintf("%d, ", p_hist[syscall_number].pids[i]);
   }
+  cprintf("%d", p_hist[syscall_number].pids[limit]);
   cprintf("\n");
 
   return 0;

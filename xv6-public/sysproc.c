@@ -95,8 +95,9 @@ sys_get_callers(void) {
   int sys_call_number;
   if(argint(0, &sys_call_number) < 0)
     return -1;
-  
-  return get_callers(sys_call_number);
+
+  get_callers(sys_call_number);
+  return 0;
 }
 
 int

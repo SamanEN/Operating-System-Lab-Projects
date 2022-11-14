@@ -40,10 +40,10 @@ struct cpu*
 mycpu(void)
 {
   int apicid, i;
-  
+
   if(readeflags()&FL_IF)
     panic("mycpu called with interrupts enabled\n");
-  
+
   apicid = lapicid();
   // APIC IDs are not guaranteed to be contiguous. Maybe we should have
   // a reverse map, or reserve a register to store &cpus[i].
@@ -126,7 +126,7 @@ userinit(void)
   extern char _binary_initcode_start[], _binary_initcode_size[];
 
   p = allocproc();
-  
+
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
     panic("userinit: out of memory?");
@@ -277,7 +277,7 @@ wait(void)
   struct proc *p;
   int havekids, pid;
   struct proc *curproc = myproc();
-  
+
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for exited children.
@@ -327,7 +327,7 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
-  
+
   for(;;){
     // Enable interrupts on this processor.
     sti();
@@ -420,7 +420,7 @@ void
 sleep(void *chan, struct spinlock *lk)
 {
   struct proc *p = myproc();
-  
+
   if(p == 0)
     panic("sleep");
 
@@ -542,22 +542,21 @@ push_p_hist(int pid, int syscall_number) {
   ++(p_hist[syscall_number].size);
 }
 
-int
+void
 get_callers(int syscall_number) {
   int limit = p_hist[syscall_number].size;
 
   if(limit == 0) {
     cprintf("No process has called system call number %d.\n", syscall_number);
-    return 0;
+    return;
   }
 
   int i = (limit > PROC_HIST_SIZE) ? limit % PROC_HIST_SIZE : 0;
-  limit = (limit - 1) % PROC_HIST_SIZE;
-  for(; i != limit; i = (i + 1) % PROC_HIST_SIZE) {
-    cprintf("%d, ", p_hist[syscall_number].pids[i]);
+  while(1) {
+    cprintf("%d", p_hist[syscall_number].pids[i]);
+    i = (i + 1) % PROC_HIST_SIZE;
+    if(i == limit) break;
+    cprintf(", ");
   }
-  cprintf("%d", p_hist[syscall_number].pids[limit]);
   cprintf("\n");
-
-  return 0;
 }

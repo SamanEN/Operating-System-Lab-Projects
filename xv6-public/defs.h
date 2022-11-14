@@ -123,7 +123,7 @@ int             wait(void);
 void            wakeup(void*);
 void            yield(void);
 void            push_p_hist(int, int);
-int             get_callers(int);
+void            get_callers(int);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

@@ -552,7 +552,9 @@ get_callers(int syscall_number) {
   }
 
   int i = (limit > PROC_HIST_SIZE) ? limit % PROC_HIST_SIZE : 0;
-  while(1) {
+  limit %= PROC_HIST_SIZE;
+  while (1)
+  {
     cprintf("%d", p_hist[syscall_number].pids[i]);
     i = (i + 1) % PROC_HIST_SIZE;
     if(i == limit) break;

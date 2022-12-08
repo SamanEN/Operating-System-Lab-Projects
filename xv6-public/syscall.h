@@ -24,3 +24,4 @@
 #define SYS_change_file_size 23
 #define SYS_get_callers 24
 #define SYS_get_parent_pid 25
+#define SYS_change_scheduling_queue 26

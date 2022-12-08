@@ -32,6 +32,12 @@ struct context {
   uint eip;
 };
 
+enum schedqueue { UNSET, ROUND_ROBIN, LOTTERY, BJF };
+
+struct schedinfo {
+  enum schedqueue queue; // Process queue
+};
+
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
 // Per-process state
@@ -49,6 +55,7 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+  struct schedinfo sched_info; // Scheduling information
 };
 
 // Process memory is laid out contiguously, low addresses first:

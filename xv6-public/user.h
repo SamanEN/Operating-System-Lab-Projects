@@ -27,6 +27,7 @@ int find_largest_prime_factor(void);
 int change_file_size(char*, int);
 void get_callers(int);
 int get_parent_pid(void);
+int change_scheduling_queue(int, int);
 
 // ulib.c
 int stat(const char*, struct stat*);

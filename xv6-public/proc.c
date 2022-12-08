@@ -562,3 +562,21 @@ get_callers(int syscall_number) {
   }
   cprintf("\n");
 }
+
+int
+change_queue(int pid, int new_queue) {
+  struct proc *p;
+  int old_queue = -1;
+
+  acquire(&ptable.lock);
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->pid == pid){
+      old_queue = p->sched_info.queue;
+      p->sched_info.queue = new_queue;
+      release(&ptable.lock);
+      return old_queue;
+    }
+  }
+  release(&ptable.lock);
+  return old_queue;
+}

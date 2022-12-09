@@ -124,6 +124,7 @@ void            wakeup(void*);
 void            yield(void);
 void            push_p_hist(int, int);
 void            get_callers(int);
+int             change_queue(int, int);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

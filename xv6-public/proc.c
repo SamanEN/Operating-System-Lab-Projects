@@ -155,6 +155,8 @@ userinit(void)
   p->state = RUNNABLE;
   p->sched_info.queue = ROUND_ROBIN;
 
+  p->sched_info.last_run = 0;
+
   release(&ptable.lock);
 }
 
@@ -221,6 +223,10 @@ fork(void)
 
   np->state = RUNNABLE;
   np->sched_info.queue = ROUND_ROBIN;
+
+  acquire(&tickslock);
+  np->sched_info.last_run = ticks;
+  release(&tickslock);
 
   release(&ptable.lock);
 
@@ -317,6 +323,25 @@ wait(void)
   }
 }
 
+void
+ageprocs(int osTicks)
+{
+  struct proc *p;
+
+  acquire(&ptable.lock);
+
+  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+  {
+    if (p->state == RUNNABLE && p->sched_info.queue != ROUND_ROBIN)
+    {
+      if (osTicks - p->sched_info.last_run > AGING_THRESHOLD)
+        change_queue(p->pid, ROUND_ROBIN);
+    }
+  }
+
+  release(&ptable.lock);
+}
+
 struct proc*
 roundrobin(struct proc **lastScheduled)
 {
@@ -375,6 +400,11 @@ scheduler(void)
     c->proc = p;
     switchuvm(p);
     p->state = RUNNING;
+
+    acquire(&tickslock);
+    p->sched_info.last_run = ticks;
+    release(&tickslock);
+
     swtch(&(c->scheduler), p->context);
     switchkvm();
     // Process is done running for now.

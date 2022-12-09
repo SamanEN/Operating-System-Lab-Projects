@@ -36,6 +36,7 @@ enum schedqueue { UNSET, ROUND_ROBIN, LOTTERY, BJF };
 
 struct schedinfo {
   enum schedqueue queue; // Process queue
+  int last_run;          // Last time process was run
 };
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
@@ -66,6 +67,7 @@ struct proc {
 
 #define PROC_HIST_SIZE 1000
 #define SYS_CALL_NUM 26
+#define AGING_THRESHOLD 8000
 
 struct syscall_hist {
   int pids[PROC_HIST_SIZE];

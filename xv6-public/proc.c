@@ -153,11 +153,10 @@ userinit(void)
   acquire(&ptable.lock);
 
   p->state = RUNNABLE;
-  p->sched_info.queue = ROUND_ROBIN;
-
   p->sched_info.last_run = 0;
 
   release(&ptable.lock);
+  change_queue(p->pid, UNSET);
 }
 
 // Grow current process's memory by n bytes.
@@ -222,13 +221,13 @@ fork(void)
   acquire(&ptable.lock);
 
   np->state = RUNNABLE;
-  np->sched_info.queue = ROUND_ROBIN;
 
   acquire(&tickslock);
   np->sched_info.last_run = ticks;
   release(&tickslock);
 
   release(&ptable.lock);
+  change_queue(np->pid, UNSET);
 
   return pid;
 }
@@ -624,6 +623,15 @@ int
 change_queue(int pid, int new_queue) {
   struct proc *p;
   int old_queue = -1;
+  if (new_queue == UNSET)
+  {
+    if (pid == 1)
+      new_queue = ROUND_ROBIN;
+    else if (pid > 1)
+      new_queue = ROUND_ROBIN; // TODO: change to LOTTERY
+    else
+      return -1;
+  }
 
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){

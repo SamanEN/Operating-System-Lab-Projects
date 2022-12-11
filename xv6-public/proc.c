@@ -116,6 +116,7 @@ found:
 
   memset(&p->sched_info, 0, sizeof(p->sched_info));
   p->sched_info.queue = UNSET;
+  p->sched_info.bjf.priority = BJF_PRIORITY_DEF;
   p->sched_info.bjf.priority_ratio = 1;
   p->sched_info.bjf.arrival_time_ratio = 1;
   p->sched_info.bjf.executed_cycle_ratio = 1;
@@ -722,7 +723,7 @@ set_bjf_params_process(int pid, float priority_ratio, float arrival_time_ratio, 
 {
   acquire(&ptable.lock);
   struct proc* p;
-  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->pid == pid){
       p->sched_info.bjf.priority_ratio = priority_ratio;
       p->sched_info.bjf.arrival_time_ratio = arrival_time_ratio;
@@ -740,12 +741,28 @@ set_bjf_params_system(float priority_ratio, float arrival_time_ratio, float exec
 {
   acquire(&ptable.lock);
   struct proc* p;
-  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     p->sched_info.bjf.priority_ratio = priority_ratio;
     p->sched_info.bjf.arrival_time_ratio = arrival_time_ratio;
     p->sched_info.bjf.executed_cycle_ratio = executed_cycles_ratio;
   }
   release(&ptable.lock);
+}
+
+int
+set_bjf_priority(int pid, int priority)
+{
+  acquire(&ptable.lock);
+  struct proc* p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->pid == pid){
+      p->sched_info.bjf.priority = priority;
+      release(&ptable.lock);
+      return 0;
+    }
+  }
+  release(&ptable.lock);
+  return -1;
 }
 
 void
@@ -760,9 +777,9 @@ print_process_info()
   [ZOMBIE]    "zombie"
   };
 
-  static int columns[] = {16, 8, 9, 8, 8, 8, 8, 8, 8, 8, 8};
-  cprintf("Process_Name    PID     State    Queue   Cycle   Arrival Ticket  R_Prty  R_Arvl  R_Exec  Rank\n"
-          "---------------------------------------------------------------------------------------------\n");
+  static int columns[] = {16, 8, 9, 8, 8, 8, 8, 9, 8, 8, 8, 8};
+  cprintf("Process_Name    PID     State    Queue   Cycle   Arrival Ticket  Priority R_Prty  R_Arvl  R_Exec  Rank\n"
+          "------------------------------------------------------------------------------------------------------\n");
 
   struct proc *p;
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
@@ -796,14 +813,17 @@ print_process_info()
     cprintf("%d", p->sched_info.tickets_count);
     printspaces(columns[6] - digitcount(p->sched_info.tickets_count));
 
+    cprintf("%d", p->sched_info.bjf.priority);
+    printspaces(columns[7] - digitcount(p->sched_info.bjf.priority));
+
     cprintf("%d", (int)p->sched_info.bjf.priority_ratio);
-    printspaces(columns[7] - digitcount((int)p->sched_info.bjf.priority_ratio));
+    printspaces(columns[8] - digitcount((int)p->sched_info.bjf.priority_ratio));
 
     cprintf("%d", (int)p->sched_info.bjf.arrival_time_ratio);
-    printspaces(columns[8] - digitcount((int)p->sched_info.bjf.arrival_time_ratio));
+    printspaces(columns[9] - digitcount((int)p->sched_info.bjf.arrival_time_ratio));
 
     cprintf("%d", (int)p->sched_info.bjf.executed_cycle_ratio);
-    printspaces(columns[9] - digitcount((int)p->sched_info.bjf.executed_cycle_ratio));
+    printspaces(columns[10] - digitcount((int)p->sched_info.bjf.executed_cycle_ratio));
 
     cprintf("%d", (int)bjfrank(p));
     cprintf("\n");

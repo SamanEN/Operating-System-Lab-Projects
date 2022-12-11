@@ -32,6 +32,10 @@ struct context {
   uint eip;
 };
 
+#define BJF_PRIORITY_MIN 1
+#define BJF_PRIORITY_DEF 3
+#define BJF_PRIORITY_MAX 5
+
 enum schedqueue { UNSET, ROUND_ROBIN, LOTTERY, BJF };
 
 struct bjfinfo {
@@ -77,7 +81,7 @@ struct proc {
 //   expandable heap
 
 #define PROC_HIST_SIZE 1000
-#define SYS_CALL_NUM 31
+#define SYS_CALL_NUM 32
 #define AGING_THRESHOLD 8000
 
 struct syscall_hist {

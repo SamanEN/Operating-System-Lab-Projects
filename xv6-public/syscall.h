@@ -28,4 +28,5 @@
 #define SYS_set_lottery_ticket 27
 #define SYS_set_bjf_params_process 28
 #define SYS_set_bjf_params_system 29
-#define SYS_print_process_info 30
+#define SYS_set_bjf_priority 30
+#define SYS_print_process_info 31

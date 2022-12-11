@@ -31,6 +31,7 @@ int change_scheduling_queue(int, int);
 int set_lottery_ticket(int, int, int);
 int set_bjf_params_process(int, float, float, float);
 void set_bjf_params_system(float, float, float);
+int set_bjf_priority(int, int);
 void print_process_info(void);
 
 // ulib.c

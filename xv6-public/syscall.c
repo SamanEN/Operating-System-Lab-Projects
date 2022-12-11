@@ -129,6 +129,7 @@ extern int sys_change_scheduling_queue(void);
 extern int sys_set_lottery_ticket(void);
 extern int sys_set_bjf_params_process(void);
 extern int sys_set_bjf_params_system(void);
+extern int sys_set_bjf_priority(void);
 extern int sys_print_process_info(void);
 
 static int (*syscalls[])(void) = {
@@ -161,6 +162,7 @@ static int (*syscalls[])(void) = {
 [SYS_set_lottery_ticket]        sys_set_lottery_ticket,
 [SYS_set_bjf_params_process]    sys_set_bjf_params_process,
 [SYS_set_bjf_params_system]     sys_set_bjf_params_system,
+[SYS_set_bjf_priority]          sys_set_bjf_priority,
 [SYS_print_process_info]        sys_print_process_info,
 };
 

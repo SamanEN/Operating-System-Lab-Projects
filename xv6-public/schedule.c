@@ -10,6 +10,7 @@ void help()
     printf(1, "  set_tickets <pid> <tickets>\n");
     printf(1, "  set_process_bjf <pid> <priority_ratio> <arrival_time_ratio> <executed_cycle_ratio>\n");
     printf(1, "  set_system_bjf <priority_ratio> <arrival_time_ratio> <executed_cycle_ratio>\n");
+    printf(1, "  set_priority_bjf <pid> <priority>\n");
 }
 
 void info()
@@ -85,6 +86,25 @@ void set_system_bjf(int priority_ratio, int arrival_time_ratio, int executed_cyc
     printf(1, "BJF params set successfully\n");
 }
 
+void set_priority_bjf(int pid, int priority)
+{
+    if (pid < 1)
+    {
+        printf(1, "Invalid pid\n");
+        return;
+    }
+    if (priority < 0)
+    {
+        printf(1, "Invalid priority\n");
+        return;
+    }
+    int res = set_bjf_priority(pid, priority);
+    if (res < 0)
+        printf(1, "Error setting priority\n");
+    else
+        printf(1, "BJF priority set successfully\n");
+}
+
 int main(int argc, char* argv[])
 {
     if (argc < 2)
@@ -129,6 +149,15 @@ int main(int argc, char* argv[])
             exit();
         }
         set_system_bjf(atoi(argv[2]), atoi(argv[3]), atoi(argv[4]));
+    }
+    else if (!strcmp(argv[1], "set_priority_bjf"))
+    {
+        if (argc < 4)
+        {
+            help();
+            exit();
+        }
+        set_priority_bjf(atoi(argv[2]), atoi(argv[3]));
     }
     else
         help();

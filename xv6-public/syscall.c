@@ -108,6 +108,7 @@ extern int sys_change_file_size(void);
 extern int sys_get_callers(void);
 extern int sys_get_parent_pid(void);
 extern int sys_change_scheduling_queue(void);
+extern int sys_set_lottery_ticket(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -136,6 +137,7 @@ static int (*syscalls[])(void) = {
 [SYS_get_callers]               sys_get_callers,
 [SYS_get_parent_pid]            sys_get_parent_pid,
 [SYS_change_scheduling_queue]   sys_change_scheduling_queue,
+[SYS_set_lottery_ticket]        sys_set_lottery_ticket
 };
 
 void

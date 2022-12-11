@@ -381,6 +381,8 @@ lottery(struct proc* procs, unsigned int procs_len) {
       tickets_sum += procs[i].sched_info.tickets_num;
     }
   }
+  if (tickets_sum == 0)
+    return result;
 
   uint ticket = rand() % tickets_sum;
 
@@ -689,4 +691,20 @@ change_queue(int pid, int new_queue) {
   }
   release(&ptable.lock);
   return old_queue;
+}
+
+int
+set_lottery_ticket(int pid, int tickets) {
+  struct proc* p;
+
+  acquire(&ptable.lock);
+  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+    if ((p->pid == pid) && (p->sched_info.queue == LOTTERY)) {
+      p->sched_info.tickets_num = tickets;
+      release(&ptable.lock);
+      return 1;
+    }
+  }
+  release(&ptable.lock);
+  return -1;
 }

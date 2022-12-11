@@ -121,3 +121,18 @@ sys_change_scheduling_queue(void)
 
   return change_queue(pid, queue_number);
 }
+
+int
+sys_set_lottery_ticket(void) {
+  int pid, tickets;
+  if (argint(0, &pid) < 0)
+    return -1;
+  
+  if (argint(1, &tickets) < 0)
+    return -1;
+  
+  if (tickets < 0)
+    return -1;
+  
+  return set_lottery_ticket(pid, tickets);
+}

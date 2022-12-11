@@ -400,9 +400,7 @@ scheduler(void)
     switchuvm(p);
     p->state = RUNNING;
 
-    acquire(&tickslock);
     p->sched_info.last_run = ticks;
-    release(&tickslock);
 
     swtch(&(c->scheduler), p->context);
     switchkvm();

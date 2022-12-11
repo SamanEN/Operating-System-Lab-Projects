@@ -9,14 +9,14 @@ srand(uint s)
   seed = s;
 }
 
-int
+uint
 rand(void)
 {
-    seed = seed
-        * 1103515245
-        + 12345
-        % (1 << 31);
-    return seed;
+  seed = seed
+    * 1103515245
+    + 12345
+    % (1 << 31);
+  return seed;
 }
 
 int

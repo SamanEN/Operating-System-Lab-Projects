@@ -185,7 +185,7 @@ void            uartputc(int);
 
 // utils.c
 void            srand(uint);
-int             rand(void);
+uint            rand(void);
 int             digitcount(int);
 void            printspaces(int);
 

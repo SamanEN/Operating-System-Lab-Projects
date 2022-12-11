@@ -14,7 +14,7 @@ void help()
 
 void info()
 {
-    // TODO: print process table (system call)
+    print_process_info();
 }
 
 void set_queue(int pid, int new_queue)
@@ -32,6 +32,8 @@ void set_queue(int pid, int new_queue)
     int res = change_scheduling_queue(pid, new_queue);
     if (res < 0)
         printf(1, "Error changing queue\n");
+    else
+        printf(1, "Queue changed successfully\n");
 }
 
 void set_tickets(int pid, int tickets)
@@ -46,7 +48,11 @@ void set_tickets(int pid, int tickets)
         printf(1, "Invalid tickets\n");
         return;
     }
-    // TODO: set tickets (system call)
+    int res = set_lottery_ticket(pid, tickets, 0);
+    if (res < 0)
+        printf(1, "Error setting tickets\n");
+    else
+        printf(1, "Tickets set successfully\n");
 }
 
 void set_process_bjf(int pid, int priority_ratio, int arrival_time_ratio, int executed_cycle_ratio)
@@ -61,7 +67,11 @@ void set_process_bjf(int pid, int priority_ratio, int arrival_time_ratio, int ex
         printf(1, "Invalid ratios\n");
         return;
     }
-    // TODO: set process bjf (system call)
+    int res = set_bjf_params_process(pid, priority_ratio, arrival_time_ratio, executed_cycle_ratio);
+    if (res < 0)
+        printf(1, "Error setting BJF params\n");
+    else
+        printf(1, "BJF params set successfully\n");
 }
 
 void set_system_bjf(int priority_ratio, int arrival_time_ratio, int executed_cycle_ratio)
@@ -71,7 +81,8 @@ void set_system_bjf(int priority_ratio, int arrival_time_ratio, int executed_cyc
         printf(1, "Invalid ratios\n");
         return;
     }
-    // TODO: set system bjf (system call)
+    set_bjf_params_system(priority_ratio, arrival_time_ratio, executed_cycle_ratio);
+    printf(1, "BJF params set successfully\n");
 }
 
 int main(int argc, char* argv[])

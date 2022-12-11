@@ -160,9 +160,11 @@ char*           strncpy(char*, const char*, int);
 
 // syscall.c
 int             argint(int, int*);
+int             argfloat(int, float*);
 int             argptr(int, char**, int);
 int             argstr(int, char**);
 int             fetchint(uint, int*);
+int             fetchfloat(uint, float*);
 int             fetchstr(uint, char**);
 void            syscall(void);
 

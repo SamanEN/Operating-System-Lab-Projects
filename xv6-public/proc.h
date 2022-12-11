@@ -35,6 +35,7 @@ struct context {
 #define BJF_PRIORITY_MIN 1
 #define BJF_PRIORITY_DEF 3
 #define BJF_PRIORITY_MAX 5
+#define MAX_RANDOM_TICKETS 10
 
 enum schedqueue { UNSET, ROUND_ROBIN, LOTTERY, BJF };
 

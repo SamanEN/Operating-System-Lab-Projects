@@ -25,3 +25,6 @@
 #define SYS_get_callers 24
 #define SYS_get_parent_pid 25
 #define SYS_change_scheduling_queue 26
+#define SYS_set_bjf_params_process 28
+#define SYS_set_bjf_params_system 29
+#define SYS_print_process_info 30

@@ -114,7 +114,11 @@ found:
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
 
+  memset(&p->sched_info, 0, sizeof(p->sched_info));
   p->sched_info.queue = UNSET;
+  p->sched_info.bjf.priority_ratio = 1;
+  p->sched_info.bjf.arrival_time_ratio = 1;
+  p->sched_info.bjf.executed_cycle_ratio = 1;
 
   return p;
 }
@@ -153,7 +157,6 @@ userinit(void)
   acquire(&ptable.lock);
 
   p->state = RUNNABLE;
-  p->sched_info.last_run = 0;
 
   release(&ptable.lock);
   change_queue(p->pid, UNSET);
@@ -224,6 +227,7 @@ fork(void)
 
   acquire(&tickslock);
   np->sched_info.last_run = ticks;
+  np->sched_info.bjf.arrival_time = ticks;
   release(&tickslock);
 
   release(&ptable.lock);
@@ -363,6 +367,34 @@ roundrobin(struct proc **lastScheduled)
   }
 }
 
+static float
+bjfrank(struct proc* p)
+{
+  return p->sched_info.bjf.priority * p->sched_info.bjf.priority_ratio +
+         p->sched_info.bjf.arrival_time * p->sched_info.bjf.arrival_time_ratio +
+         p->sched_info.bjf.executed_cycle * p->sched_info.bjf.executed_cycle_ratio;
+}
+
+struct proc*
+bestjobfirst(void)
+{
+  struct proc* result = 0;
+  float minrank;
+
+  struct proc* p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->state != RUNNABLE || p->sched_info.queue != BJF)
+      continue;
+    float rank = bjfrank(p);
+    if(result == 0 || rank < minrank){
+      result = p;
+      minrank = rank;
+    }
+  }
+
+  return result;
+}
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -386,11 +418,15 @@ scheduler(void)
     acquire(&ptable.lock);
 
     p = roundrobin(&lastScheduledRR);
-
-    if (!p)
-    {
-      release(&ptable.lock);
-      continue;
+    if(!p){
+      // p = lottery();
+      if(!p){
+        p = bestjobfirst();
+        if(!p){
+          release(&ptable.lock);
+          continue;
+        }
+      }
     }
 
     // Switch to chosen process.  It is the process's job
@@ -401,6 +437,7 @@ scheduler(void)
     p->state = RUNNING;
 
     p->sched_info.last_run = ticks;
+    p->sched_info.bjf.executed_cycle += 0.1f;
 
     swtch(&(c->scheduler), p->context);
     switchkvm();
@@ -600,15 +637,14 @@ void
 get_callers(int syscall_number) {
   int limit = p_hist[syscall_number].size;
 
-  if(limit == 0) {
+  if(limit == 0){
     cprintf("No process has called system call number %d.\n", syscall_number);
     return;
   }
 
   int i = (limit > PROC_HIST_SIZE) ? limit % PROC_HIST_SIZE : 0;
   limit %= PROC_HIST_SIZE;
-  while (1)
-  {
+  while(1){
     cprintf("%d", p_hist[syscall_number].pids[i]);
     i = (i + 1) % PROC_HIST_SIZE;
     if(i == limit) break;
@@ -621,12 +657,12 @@ int
 change_queue(int pid, int new_queue) {
   struct proc *p;
   int old_queue = -1;
-  if (new_queue == UNSET)
-  {
+
+  if(new_queue == UNSET){
     if (pid == 1)
       new_queue = ROUND_ROBIN;
     else if (pid > 1)
-      new_queue = ROUND_ROBIN; // TODO: change to LOTTERY
+      new_queue = BJF; // TODO: change to LOTTERY
     else
       return -1;
   }
@@ -636,10 +672,46 @@ change_queue(int pid, int new_queue) {
     if(p->pid == pid){
       old_queue = p->sched_info.queue;
       p->sched_info.queue = new_queue;
-      release(&ptable.lock);
-      return old_queue;
+      break;
     }
   }
   release(&ptable.lock);
   return old_queue;
+}
+
+int
+set_bjf_params_process(int pid, float priority_ratio, float arrival_time_ratio, float executed_cycles_ratio)
+{
+  acquire(&ptable.lock);
+  struct proc* p;
+  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->pid == pid){
+      p->sched_info.bjf.priority_ratio = priority_ratio;
+      p->sched_info.bjf.arrival_time_ratio = arrival_time_ratio;
+      p->sched_info.bjf.executed_cycle_ratio = executed_cycles_ratio;
+      release(&ptable.lock);
+      return 0;
+    }
+  }
+  release(&ptable.lock);
+  return -1;
+}
+
+void
+set_bjf_params_system(float priority_ratio, float arrival_time_ratio, float executed_cycles_ratio)
+{
+  acquire(&ptable.lock);
+  struct proc* p;
+  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    p->sched_info.bjf.priority_ratio = priority_ratio;
+    p->sched_info.bjf.arrival_time_ratio = arrival_time_ratio;
+    p->sched_info.bjf.executed_cycle_ratio = executed_cycles_ratio;
+  }
+  release(&ptable.lock);
+}
+
+void
+print_process_info()
+{
+
 }

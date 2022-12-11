@@ -126,6 +126,9 @@ void            yield(void);
 void            push_p_hist(int, int);
 void            get_callers(int);
 int             change_queue(int, int);
+int             set_bjf_params_process(int, float, float, float);
+void            set_bjf_params_system(float, float, float);
+void            print_process_info(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

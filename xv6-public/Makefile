@@ -188,6 +188,7 @@ UPROGS=\
 	_change_file_size\
 	_get_callers_test\
 	_get_parent_pid_test\
+	_schedule\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)

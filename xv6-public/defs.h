@@ -182,6 +182,10 @@ void            uartinit(void);
 void            uartintr(void);
 void            uartputc(int);
 
+// utils.c
+void            srand(uint);
+int             rand(void);
+
 // vm.c
 void            seginit(void);
 void            kvmalloc(void);

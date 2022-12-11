@@ -25,6 +25,7 @@ OBJS = \
 	trapasm.o\
 	trap.o\
 	uart.o\
+	utils.o\
 	vectors.o\
 	vm.o\
 	sysutils.o\

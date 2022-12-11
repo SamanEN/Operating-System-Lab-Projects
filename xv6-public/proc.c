@@ -395,14 +395,6 @@ bestjobfirst(void)
   return result;
 }
 
-unsigned long randstate = 1;
-uint
-rand()
-{
-  randstate = randstate * 1664525 + 1013904223;
-  return randstate;
-}
-
 struct proc*
 lottery() {
   struct proc* result = 0;
@@ -452,6 +444,7 @@ scheduler(void)
   struct proc *lastScheduledRR = &ptable.proc[NPROC - 1];
   struct cpu *c = mycpu();
   c->proc = 0;
+  srand(ticks);
 
   for(;;){
     // Enable interrupts on this processor.

@@ -402,7 +402,7 @@ lottery() {
   uint tickets_sum = 0;
   for (int i = 0; i < NPROC; ++i) {
     if ((ptable.proc[i].state == RUNNABLE) && (ptable.proc[i].sched_info.queue == LOTTERY)) {
-      tickets_sum += ptable.proc[i].sched_info.tickets_num;
+      tickets_sum += ptable.proc[i].sched_info.tickets_count;
     }
   }
   if (tickets_sum == 0)
@@ -418,12 +418,12 @@ lottery() {
       continue;
     if (
       (ticket >= prev_interval_begin) &&
-      (ticket <= prev_interval_begin + ptable.proc[i].sched_info.tickets_num)
+      (ticket <= prev_interval_begin + ptable.proc[i].sched_info.tickets_count)
     ) {
       result = &ptable.proc[i];
       break;
     }
-    prev_interval_begin += ptable.proc[i].sched_info.tickets_num;
+    prev_interval_begin += ptable.proc[i].sched_info.tickets_count;
   }
 
   return result;
@@ -708,7 +708,7 @@ change_queue(int pid, int new_queue) {
       old_queue = p->sched_info.queue;
       p->sched_info.queue = new_queue;
       if (new_queue == LOTTERY) {
-        p->sched_info.tickets_num = 10;
+        p->sched_info.tickets_count = 10;
       }
       break;
     }
@@ -761,7 +761,7 @@ set_lottery_ticket(int pid, int tickets) {
   acquire(&ptable.lock);
   for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
     if ((p->pid == pid) && (p->sched_info.queue == LOTTERY)) {
-      p->sched_info.tickets_num = tickets;
+      p->sched_info.tickets_count = tickets;
       release(&ptable.lock);
       return 1;
     }

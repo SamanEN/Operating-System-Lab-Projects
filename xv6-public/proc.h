@@ -47,7 +47,7 @@ struct schedinfo {
   enum schedqueue queue; // Process queue
   int last_run;          // Last time process was run
   struct bjfinfo bjf;    // Best-Job-First scheduling info
-  int tickets_num;       // Number of tickets for lottery scheduler
+  int tickets_count;       // Number of tickets for lottery scheduler
 };
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };

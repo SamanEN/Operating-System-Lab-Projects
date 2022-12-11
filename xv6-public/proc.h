@@ -37,6 +37,7 @@ enum schedqueue { UNSET, ROUND_ROBIN, LOTTERY, BJF };
 struct schedinfo {
   enum schedqueue queue; // Process queue
   int last_run;          // Last time process was run
+  int tickets_num;       // Number of tickets for lottery scheduler
 };
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };

@@ -363,6 +363,46 @@ roundrobin(struct proc **lastScheduled)
   }
 }
 
+unsigned long randstate = 1;
+uint
+rand()
+{
+  randstate = randstate * 1664525 + 1013904223;
+  return randstate;
+}
+
+struct proc*
+lottery(struct proc* procs, unsigned int procs_len) {
+  struct proc* result = 0;
+
+  uint tickets_sum = 0;
+  for (int i = 0; i < procs_len; ++i) {
+    if ((procs[i].state == RUNNABLE) && (procs[i].sched_info.queue == LOTTERY)) {
+      tickets_sum += procs[i].sched_info.tickets_num;
+    }
+  }
+
+  uint ticket = rand() % tickets_sum;
+
+  uint prev_interval_begin = 0;
+  for (int i = 0; i < procs_len; ++i) {
+    if (procs[i].state != RUNNABLE)
+      continue;
+    if (procs[i].sched_info.queue != LOTTERY)
+      continue;
+    if (
+      (ticket >= prev_interval_begin) &&
+      (ticket <= prev_interval_begin + procs[i].sched_info.tickets_num)
+    ) {
+      result = &procs[i];
+      break;
+    }
+    prev_interval_begin += procs[i].sched_info.tickets_num;
+  }
+
+  return result;
+}
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -386,6 +426,10 @@ scheduler(void)
     acquire(&ptable.lock);
 
     p = roundrobin(&lastScheduledRR);
+
+    if (!p) {
+      p = lottery(ptable.proc, NPROC);
+    }
 
     if (!p)
     {
@@ -626,7 +670,7 @@ change_queue(int pid, int new_queue) {
     if (pid == 1)
       new_queue = ROUND_ROBIN;
     else if (pid > 1)
-      new_queue = ROUND_ROBIN; // TODO: change to LOTTERY
+      new_queue = LOTTERY;
     else
       return -1;
   }
@@ -636,6 +680,9 @@ change_queue(int pid, int new_queue) {
     if(p->pid == pid){
       old_queue = p->sched_info.queue;
       p->sched_info.queue = new_queue;
+      if (new_queue == LOTTERY) {
+        p->sched_info.tickets_num = 10;
+      }
       release(&ptable.lock);
       return old_queue;
     }

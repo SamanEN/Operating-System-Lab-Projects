@@ -710,8 +710,83 @@ set_bjf_params_system(float priority_ratio, float arrival_time_ratio, float exec
   release(&ptable.lock);
 }
 
+static int
+digitcount(int num)
+{
+  if(num == 0) return 1;
+  int count = 0;
+  while(num){
+    num /= 10;
+    ++count;
+  }
+  return count;
+}
+
+static void
+printspace(int count)
+{
+  for(int i = 0; i < count; ++i)
+    cprintf(" ");
+}
+
 void
 print_process_info()
 {
+ static char *states[] = {
+  [UNUSED]    "unused",
+  [EMBRYO]    "embryo",
+  [SLEEPING]  "sleeping",
+  [RUNNABLE]  "runnable",
+  [RUNNING]   "running",
+  [ZOMBIE]    "zombie"
+  };
 
+  static int columns[] = {16, 8, 9, 8, 8, 8, 8, 8, 8, 8, 8};
+  cprintf("Process_Name    PID     State    Queue   Cycle   Arrival Ticket  R_Prty  R_Arvl  R_Exec  Rank\n"
+          "---------------------------------------------------------------------------------------------\n");
+
+  struct proc *p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->state == UNUSED)
+      continue;
+
+    const char* state;
+    if(p->state >= 0 && p->state < NELEM(states) && states[p->state])
+      state = states[p->state];
+    else
+      state = "???";
+
+    cprintf("%s", p->name);
+    printspace(columns[0] - strlen(p->name));
+
+    cprintf("%d", p->pid);
+    printspace(columns[1] - digitcount(p->pid));
+
+    cprintf("%s", state);
+    printspace(columns[2] - strlen(state));
+
+    cprintf("%d", p->sched_info.queue);
+    printspace(columns[3] - digitcount(p->sched_info.queue));
+
+    cprintf("%d", (int)p->sched_info.bjf.executed_cycle);
+    printspace(columns[4] - digitcount((int)p->sched_info.bjf.executed_cycle));
+
+    cprintf("%d", p->sched_info.bjf.arrival_time);
+    printspace(columns[5] - digitcount(p->sched_info.bjf.arrival_time));
+
+    // TODO: cprintf("%d", p->sched_info.ticket);
+    printspace(columns[6]);
+
+    cprintf("%d", (int)p->sched_info.bjf.priority_ratio);
+    printspace(columns[7] - digitcount((int)p->sched_info.bjf.priority_ratio));
+
+    cprintf("%d", (int)p->sched_info.bjf.arrival_time_ratio);
+    printspace(columns[8] - digitcount((int)p->sched_info.bjf.arrival_time_ratio));
+
+    cprintf("%d", (int)p->sched_info.bjf.executed_cycle_ratio);
+    printspace(columns[9] - digitcount((int)p->sched_info.bjf.executed_cycle_ratio));
+
+    cprintf("%d", (int)bjfrank(p));
+    cprintf("\n");
+  }
 }

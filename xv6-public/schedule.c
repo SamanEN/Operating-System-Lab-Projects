@@ -49,7 +49,7 @@ void set_tickets(int pid, int tickets)
         printf(1, "Invalid tickets\n");
         return;
     }
-    int res = set_lottery_ticket(pid, tickets, 0);
+    int res = set_lottery_ticket(pid, tickets);
     if (res < 0)
         printf(1, "Error setting tickets\n");
     else

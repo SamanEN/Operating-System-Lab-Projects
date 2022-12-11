@@ -28,7 +28,7 @@ int change_file_size(char*, int);
 void get_callers(int);
 int get_parent_pid(void);
 int change_scheduling_queue(int, int);
-int set_lottery_ticket(int, int, int);
+int set_lottery_ticket(int, int);
 int set_bjf_params_process(int, float, float, float);
 void set_bjf_params_system(float, float, float);
 int set_bjf_priority(int, int);

@@ -708,7 +708,7 @@ change_queue(int pid, int new_queue) {
     if(p->pid == pid){
       old_queue = p->sched_info.queue;
       p->sched_info.queue = new_queue;
-      if (new_queue == LOTTERY && p->sched_info.tickets_count == 0) {
+      if (new_queue == LOTTERY && p->sched_info.tickets_count <= 0) {
         p->sched_info.tickets_count = (rand() % MAX_RANDOM_TICKETS) + 1;
       }
       break;

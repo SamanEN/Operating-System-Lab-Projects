@@ -34,9 +34,19 @@ struct context {
 
 enum schedqueue { UNSET, ROUND_ROBIN, LOTTERY, BJF };
 
+struct bjfinfo {
+  int priority;
+  float priority_ratio;
+  int arrival_time;
+  float arrival_time_ratio;
+  float executed_cycle;
+  float executed_cycle_ratio;
+};
+
 struct schedinfo {
   enum schedqueue queue; // Process queue
   int last_run;          // Last time process was run
+  struct bjfinfo bjf;    // Best-Job-First scheduling info
   int tickets_num;       // Number of tickets for lottery scheduler
 };
 
@@ -67,7 +77,7 @@ struct proc {
 //   expandable heap
 
 #define PROC_HIST_SIZE 1000
-#define SYS_CALL_NUM 26
+#define SYS_CALL_NUM 31
 #define AGING_THRESHOLD 8000
 
 struct syscall_hist {

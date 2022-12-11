@@ -110,10 +110,7 @@ int
 sys_change_scheduling_queue(void)
 {
   int queue_number, pid;
-  if(argint(0, &pid) < 0)
-    return -1;
-
-  if (argint(1, &queue_number) < 0)
+  if(argint(0, &pid) < 0 || argint(1, &queue_number) < 0)
     return -1;
 
   if (queue_number < ROUND_ROBIN || queue_number > BJF)
@@ -127,12 +124,50 @@ sys_set_lottery_ticket(void) {
   int pid, tickets;
   if (argint(0, &pid) < 0)
     return -1;
-  
+
   if (argint(1, &tickets) < 0)
     return -1;
-  
+
   if (tickets < 0)
     return -1;
-  
+
   return set_lottery_ticket(pid, tickets);
+}
+
+int
+sys_set_bjf_params_process(void)
+{
+  int pid;
+  float priority_ratio, arrival_time_ratio, executed_cycle_ratio;
+  if(argint(0, &pid) < 0 ||
+     argfloat(1, &priority_ratio) < 0 ||
+     argfloat(2, &arrival_time_ratio) < 0 ||
+     argfloat(3, &executed_cycle_ratio) < 0){
+    return -1;
+  }
+
+  return set_bjf_params_process(pid, priority_ratio, arrival_time_ratio, executed_cycle_ratio);
+}
+
+int
+sys_set_bjf_params_system(void)
+{
+  int pid;
+  float priority_ratio, arrival_time_ratio, executed_cycle_ratio;
+  if(argint(0, &pid) < 0 ||
+     argfloat(1, &priority_ratio) < 0 ||
+     argfloat(2, &arrival_time_ratio) < 0 ||
+     argfloat(3, &executed_cycle_ratio) < 0){
+    return -1;
+  }
+
+  set_bjf_params_system(priority_ratio, arrival_time_ratio, executed_cycle_ratio);
+  return 0;
+}
+
+int
+sys_print_process_info(void)
+{
+  print_process_info();
+  return 0;
 }

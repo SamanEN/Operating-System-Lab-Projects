@@ -25,6 +25,18 @@ fetchint(uint addr, int *ip)
   return 0;
 }
 
+// Fetch the float at addr from the current process.
+int
+fetchfloat(uint addr, float *fp)
+{
+  struct proc *curproc = myproc();
+
+  if(addr >= curproc->sz || addr+4 > curproc->sz)
+    return -1;
+  *fp = *(float*)(addr);
+  return 0;
+}
+
 // Fetch the nul-terminated string at addr from the current process.
 // Doesn't actually copy the string - just sets *pp to point at it.
 // Returns length of string, not including nul.
@@ -50,6 +62,12 @@ int
 argint(int n, int *ip)
 {
   return fetchint((myproc()->tf->esp) + 4 + 4*n, ip);
+}
+
+int
+argfloat(int n, float *fp)
+{
+  return fetchfloat((myproc()->tf->esp) + 4 + 4*n, fp);
 }
 
 // Fetch the nth word-sized system call argument as a pointer
@@ -109,6 +127,9 @@ extern int sys_get_callers(void);
 extern int sys_get_parent_pid(void);
 extern int sys_change_scheduling_queue(void);
 extern int sys_set_lottery_ticket(void);
+extern int sys_set_bjf_params_process(void);
+extern int sys_set_bjf_params_system(void);
+extern int sys_print_process_info(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -137,7 +158,10 @@ static int (*syscalls[])(void) = {
 [SYS_get_callers]               sys_get_callers,
 [SYS_get_parent_pid]            sys_get_parent_pid,
 [SYS_change_scheduling_queue]   sys_change_scheduling_queue,
-[SYS_set_lottery_ticket]        sys_set_lottery_ticket
+[SYS_set_lottery_ticket]        sys_set_lottery_ticket,
+[SYS_set_bjf_params_process]    sys_set_bjf_params_process,
+[SYS_set_bjf_params_system]     sys_set_bjf_params_system,
+[SYS_print_process_info]        sys_print_process_info,
 };
 
 void

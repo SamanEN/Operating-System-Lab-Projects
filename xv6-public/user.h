@@ -29,6 +29,9 @@ void get_callers(int);
 int get_parent_pid(void);
 int change_scheduling_queue(int, int);
 int set_lottery_ticket(int, int, int);
+int set_bjf_params_process(int, float, float, float);
+void set_bjf_params_system(float, float, float);
+void print_process_info(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

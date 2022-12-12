@@ -347,10 +347,9 @@ ageprocs(int osTicks)
 }
 
 struct proc*
-roundrobin(struct proc **lastScheduled)
+roundrobin(struct proc *lastScheduled)
 {
-  struct proc *p = *lastScheduled;
-
+  struct proc *p = lastScheduled;
   for (;;)
   {
     p++;
@@ -358,12 +357,9 @@ roundrobin(struct proc **lastScheduled)
       p = ptable.proc;
 
     if (p->state == RUNNABLE && p->sched_info.queue == ROUND_ROBIN)
-    {
-      *lastScheduled = p;
       return p;
-    }
 
-    if (p == *lastScheduled)
+    if (p == lastScheduled)
       return 0;
   }
 }
@@ -397,7 +393,8 @@ bestjobfirst(void)
 }
 
 struct proc*
-lottery() {
+lottery()
+{
   struct proc* result = 0;
 
   uint tickets_sum = 0;
@@ -453,8 +450,11 @@ scheduler(void)
 
     acquire(&ptable.lock);
 
-    p = roundrobin(&lastScheduledRR);
-    if(!p){
+    p = roundrobin(lastScheduledRR);
+    if(p){
+      lastScheduledRR = p;
+    }
+    else{
       p = lottery();
       if(!p){
         p = bestjobfirst();
@@ -719,6 +719,22 @@ change_queue(int pid, int new_queue) {
 }
 
 int
+set_lottery_ticket(int pid, int tickets)
+{
+  acquire(&ptable.lock);
+  struct proc* p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->pid == pid && p->sched_info.queue == LOTTERY){
+      p->sched_info.tickets_count = tickets;
+      release(&ptable.lock);
+      return 0;
+    }
+  }
+  release(&ptable.lock);
+  return -1;
+}
+
+int
 set_bjf_params_process(int pid, float priority_ratio, float arrival_time_ratio, float executed_cycles_ratio)
 {
   acquire(&ptable.lock);
@@ -828,20 +844,4 @@ print_process_info()
     cprintf("%d", (int)bjfrank(p));
     cprintf("\n");
   }
-}
-
-int
-set_lottery_ticket(int pid, int tickets) {
-  struct proc* p;
-
-  acquire(&ptable.lock);
-  for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-    if ((p->pid == pid) && (p->sched_info.queue == LOTTERY)) {
-      p->sched_info.tickets_count = tickets;
-      release(&ptable.lock);
-      return 1;
-    }
-  }
-  release(&ptable.lock);
-  return -1;
 }

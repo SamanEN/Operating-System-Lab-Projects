@@ -113,7 +113,7 @@ sys_change_scheduling_queue(void)
   if(argint(0, &pid) < 0 || argint(1, &queue_number) < 0)
     return -1;
 
-  if (queue_number < ROUND_ROBIN || queue_number > BJF)
+  if(queue_number < ROUND_ROBIN || queue_number > BJF)
     return -1;
 
   return change_queue(pid, queue_number);
@@ -122,10 +122,7 @@ sys_change_scheduling_queue(void)
 int
 sys_set_lottery_ticket(void) {
   int pid, tickets;
-  if (argint(0, &pid) < 0)
-    return -1;
-
-  if (argint(1, &tickets) < 0)
+  if(argint(0, &pid) < 0 || argint(1, &tickets) < 0)
     return -1;
 
   if (tickets < 0)

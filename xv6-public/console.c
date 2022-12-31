@@ -213,6 +213,9 @@ struct {
   int is_suggestion_used;
   char original_cmd[INPUT_BUF];
   uint original_cmd_size;
+
+  int total_count;
+  int last_arrow_total;
 } hist;
 
 static int
@@ -241,6 +244,8 @@ suggest_cmd()
     consclear();
     consputs(hist.cmd_buf[suggested_cmd]);
   }
+  else // beep
+    consputc('\a');
 }
 
 static void
@@ -252,6 +257,8 @@ push_current_hist()
           input.e - input.w - 1);
   hist.queue_idx = (hist.queue_idx + 1) % HIST_SIZE;
   hist.last_arrow_idx = hist.queue_idx;
+  hist.total_count++;
+  hist.last_arrow_total = hist.total_count;
   hist.is_suggestion_used = 0;
   hist.last_used_idx = 0;
   memset(hist.original_cmd, 0, INPUT_BUF);
@@ -336,13 +343,25 @@ consoleintr(int (*getc)(void))
     case 27: // Arrow up or down.
       if((c = getc()) == 91){
         if((c = getc()) == ARROW_UP){
-          hist.last_arrow_idx = (hist.last_arrow_idx + HIST_SIZE - 1) % HIST_SIZE;
-          consclear();
-          consputs(hist.cmd_buf[hist.last_arrow_idx]);
-        } else if(c == ARROW_DOWN){
-          hist.last_arrow_idx = (hist.last_arrow_idx + 1) % HIST_SIZE;
-          consclear();
-          consputs(hist.cmd_buf[hist.last_arrow_idx]);
+          if(hist.last_arrow_total > 0 && hist.last_arrow_total > hist.total_count - HIST_SIZE){
+            hist.last_arrow_idx = (hist.last_arrow_idx - 1 + HIST_SIZE) % HIST_SIZE;
+            hist.last_arrow_total--;
+            consclear();
+            consputs(hist.cmd_buf[hist.last_arrow_idx]);
+          }
+          else // beep
+            consputc('\a');
+        }
+        else if (c == ARROW_DOWN)
+        {
+          if(hist.last_arrow_total < hist.total_count){
+            hist.last_arrow_idx = (hist.last_arrow_idx + 1) % HIST_SIZE;
+            hist.last_arrow_total++;
+            consclear();
+            consputs(hist.cmd_buf[hist.last_arrow_idx]);
+          }
+          else // beep
+            consputc('\a');
         }
       }
       break;

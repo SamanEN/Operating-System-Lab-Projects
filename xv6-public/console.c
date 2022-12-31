@@ -297,6 +297,8 @@ remnums()
 }
 
 #define C(x)  ((x)-'@')  // Control-x
+#define ARROW_UP 65
+#define ARROW_DOWN 66
 
 void
 consoleintr(int (*getc)(void))
@@ -328,6 +330,23 @@ consoleintr(int (*getc)(void))
       break;
     case '\t': // Suggest command from history.
       suggest_cmd();
+      break;
+    case 27: // Arrow up or down.
+      if((c = getc()) == 91){
+        if((c = getc()) == ARROW_UP){
+          if(hist.queue_idx > 0){
+            hist.queue_idx--;
+            consclear();
+            consputs(hist.cmd_buf[hist.queue_idx]);
+          }
+        } else if(c == ARROW_DOWN){
+          if(hist.queue_idx < HIST_SIZE - 1){
+            hist.queue_idx++;
+            consclear();
+            consputs(hist.cmd_buf[hist.queue_idx]);
+          }
+        }
+      }
       break;
     default:
       if(c != 0 && input.e-input.r < INPUT_BUF){

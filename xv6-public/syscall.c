@@ -131,6 +131,9 @@ extern int sys_set_bjf_params_process(void);
 extern int sys_set_bjf_params_system(void);
 extern int sys_set_bjf_priority(void);
 extern int sys_print_process_info(void);
+extern int sys_sem_init(void);
+extern int sys_sem_acquire(void);
+extern int sys_sem_release(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -164,6 +167,9 @@ static int (*syscalls[])(void) = {
 [SYS_set_bjf_params_system]     sys_set_bjf_params_system,
 [SYS_set_bjf_priority]          sys_set_bjf_priority,
 [SYS_print_process_info]        sys_print_process_info,
+[SYS_sem_init]                  sys_sem_init,
+[SYS_sem_acquire]               sys_sem_acquire,
+[SYS_sem_release]               sys_sem_release,
 };
 
 void

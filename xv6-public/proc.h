@@ -82,7 +82,7 @@ struct proc {
 //   expandable heap
 
 #define PROC_HIST_SIZE 1000
-#define SYS_CALL_NUM 32
+#define SYS_CALL_NUM 35
 #define AGING_THRESHOLD 8000
 
 struct syscall_hist {

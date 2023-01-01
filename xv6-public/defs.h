@@ -9,6 +9,7 @@ struct spinlock;
 struct sleeplock;
 struct stat;
 struct superblock;
+struct semaphore;
 
 // bio.c
 void            binit(void);
@@ -122,6 +123,7 @@ void            sleep(void*, struct spinlock*);
 void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
+void            wakeupproc(struct proc*);
 void            yield(void);
 void            push_p_hist(int, int);
 void            get_callers(int);
@@ -188,6 +190,15 @@ void            srand(uint);
 uint            rand(void);
 int             digitcount(int);
 void            printspaces(int);
+
+// semaphore.c
+void            semaphore_init(struct semaphore*, int, char*);
+void            semaphore_acquire(struct semaphore*);
+void            semaphore_release(struct semaphore*);
+int             semaphore_holding(struct semaphore*);
+void            sem_init(int, int);
+void            sem_acquire(int);
+void            sem_release(int);
 
 // vm.c
 void            seginit(void);

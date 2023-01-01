@@ -30,3 +30,6 @@
 #define SYS_set_bjf_params_system 29
 #define SYS_set_bjf_priority 30
 #define SYS_print_process_info 31
+#define SYS_sem_init 32
+#define SYS_sem_acquire 33
+#define SYS_sem_release 34

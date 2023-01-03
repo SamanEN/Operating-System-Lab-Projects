@@ -251,6 +251,8 @@ suggest_cmd()
 static void
 push_current_hist()
 {
+  if(input.e - input.w == 1)
+    return;
   memset(hist.cmd_buf[hist.queue_idx], 0, INPUT_BUF);
   memmove(hist.cmd_buf[hist.queue_idx],
           input.buf + input.w,
@@ -305,6 +307,33 @@ remnums()
   consputs(cmd);
 }
 
+static void
+hist_up()
+{
+  if(hist.last_arrow_total > 0 &&
+     hist.last_arrow_total > hist.total_count - HIST_SIZE){
+    hist.last_arrow_total--;
+    hist.last_arrow_idx = (hist.last_arrow_idx - 1 + HIST_SIZE) % HIST_SIZE;
+    consclear();
+    consputs(hist.cmd_buf[hist.last_arrow_idx]);
+  }
+  else // beep
+    consputc('\a');
+}
+
+static void
+hist_down()
+{
+  if(hist.last_arrow_total < hist.total_count){
+    hist.last_arrow_total++;
+    hist.last_arrow_idx = (hist.last_arrow_idx + 1) % HIST_SIZE;
+    consclear();
+    consputs(hist.cmd_buf[hist.last_arrow_idx]);
+  }
+  else // beep
+    consputc('\a');
+}
+
 #define C(x)  ((x)-'@')  // Control-x
 #define ARROW_UP 65
 #define ARROW_DOWN 66
@@ -340,31 +369,27 @@ consoleintr(int (*getc)(void))
     case '\t': // Suggest command from history.
       suggest_cmd();
       break;
-    case 27: // Arrow up or down.
+    case 27: // Escape sequence for arrow history.
       if((c = getc()) == 91){
         if((c = getc()) == ARROW_UP){
-          if(hist.last_arrow_total > 0 && hist.last_arrow_total > hist.total_count - HIST_SIZE){
-            hist.last_arrow_idx = (hist.last_arrow_idx - 1 + HIST_SIZE) % HIST_SIZE;
-            hist.last_arrow_total--;
-            consclear();
-            consputs(hist.cmd_buf[hist.last_arrow_idx]);
-          }
-          else // beep
-            consputc('\a');
+          hist_up();
+          break;
         }
-        else if (c == ARROW_DOWN)
-        {
-          if(hist.last_arrow_total < hist.total_count){
-            hist.last_arrow_idx = (hist.last_arrow_idx + 1) % HIST_SIZE;
-            hist.last_arrow_total++;
-            consclear();
-            consputs(hist.cmd_buf[hist.last_arrow_idx]);
-          }
-          else // beep
-            consputc('\a');
+        else if (c == ARROW_DOWN){
+          hist_down();
+          break;
+        }
+        else{
+          input.buf[input.e++ % INPUT_BUF] = 27;
+          consputc(27);
+          input.buf[input.e++ % INPUT_BUF] = 91;
+          consputc(91);
         }
       }
-      break;
+      else{
+        input.buf[input.e++ % INPUT_BUF] = 27;
+        consputc(27);
+      }
     default:
       if(c != 0 && input.e-input.r < INPUT_BUF){
         c = (c == '\r') ? '\n' : c;

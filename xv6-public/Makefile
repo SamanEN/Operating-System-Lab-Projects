@@ -192,6 +192,7 @@ UPROGS=\
 	_get_parent_pid_test\
 	_schedule\
 	_foo\
+	_dining_philosophers\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)

@@ -4,7 +4,7 @@
 #define LEFT(i) i
 #define RIGHT(i) (i + 1) % 5
 
-// mutes is used to make printf atomic
+// mutex is used to make printf atomic
 #define MUTEX 5
 
 #define ATOMIC(x) sem_acquire(MUTEX); x; sem_release(MUTEX);

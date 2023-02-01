@@ -12,14 +12,11 @@ int main()
             continue;
         if (pid == 0)
         {
-            if (i == PROCS_NUM)
-                sleep(8000);
-            else
-                sleep(1000);
-            for (int j = 0; j < 2 * i; ++j)
+            sleep(5000);
+            for (int j = 0; j < 100 * i; ++j)
             {
                 int x = 1;
-                for (long k = 0; k < 1000000000; ++k)
+                for (long k = 0; k < 1000000000000; ++k)
                     x++;
             }
             exit();

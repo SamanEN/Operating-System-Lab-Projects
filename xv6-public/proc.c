@@ -339,7 +339,11 @@ ageprocs(int osTicks)
     if (p->state == RUNNABLE && p->sched_info.queue != ROUND_ROBIN)
     {
       if (osTicks - p->sched_info.last_run > AGING_THRESHOLD)
+      {
+        release(&ptable.lock);
         change_queue(p->pid, ROUND_ROBIN);
+        acquire(&ptable.lock);
+      }
     }
   }
 

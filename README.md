@@ -50,7 +50,7 @@ Also, the following features are added to the console though they were not requi
 ### Task 3: User Program
 
 A `prime_numbers` program is added to the system.  
-This program finds the prime numbers in the range [$a$, $b$].  
+This program finds the prime numbers in the range $[a, b]$.  
 The program is called as follows:
 
 ```text
